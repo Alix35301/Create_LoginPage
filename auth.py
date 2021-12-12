@@ -3,7 +3,7 @@
 ########################################################################################
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from werkzeug.security import generate_password_hash, check_password_hash
-from models import User
+from models import Atoll, Island, User
 from flask_login import login_user, logout_user, login_required, current_user
 from __init__ import db
 
@@ -24,17 +24,23 @@ def login(): # define login page fucntion
         if not user:
             flash('Please sign up before!')
             return redirect(url_for('auth.signup'))
-        elif not check_password_hash(user.password, password):
+        elif user.password != password:
+        # elif not check_password_hash(user.password, password):
             flash('Please check your login details and try again.')
             return redirect(url_for('auth.login')) # if the user doesn't exist or password is wrong, reload the page
         # if the above check passes, then we know the user has the right credentials
         login_user(user, remember=remember)
-        return redirect(url_for('main.profile'))
+
+
+
+        return redirect(url_for('main.index'))
 
 @auth.route('/signup', methods=['GET', 'POST'])# we define the sign up path
 def signup(): # define the sign up function
     if request.method=='GET': # If the request is GET we return the sign up page and forms
-        return render_template('signup.html')
+        atolls = Atoll.query.all()
+        islands = Island.query.all()
+        return render_template('signup.html', atolls=atolls, islands=islands)
     else: # if the request is POST, then we check if the email doesn't already exist and then we save data
         email = request.form.get('email')
         name = request.form.get('name')
